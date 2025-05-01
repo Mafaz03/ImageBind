@@ -99,7 +99,41 @@ class TextPreprocessor(VerboseNNModule):
             return_dict["trunk"].update({"attn_mask": self.mask})
         
         return return_dict
+
+class Im2Video(VerboseNNModule):
+    """ Converts image to video (Just adding T dimension lol)"""
+    def __init__(self, time_dim = 2):
+        super().__init__()
+        self.time_dim = time_dim
     
+    def forward(self, x: torch.Tensor):
+        if x.ndim == 5:
+            # Already includes T dimension
+            return x
+        if x.ndim == 4:
+            # Convert (B, C, H, W) -> (B, C, T, H, W)
+            return x.unsqueeze(dim = self.time_dim)
+        raise ValueError(f"Dimension incorrect {x.shape}")
+
+class PadIm2Video(Im2Video):
+    def __init__(self, ntimes, pad_type, time_dim=2):
+        super().__init__(time_dim=time_dim)
+        assert ntimes > 0
+        assert pad_type in ["zero", "repeat"]
+        self.ntimes = ntimes
+        self.pad_type = pad_type
+    
+    def forward(self, x: torch.Tensor):
+        x = super().forward(x) # (B, C, H, W) -> (B, C, T, H, W)
+        if x.shape[self.time_dim] == 1:
+            if self.pad_type == "repeat":
+                new_shape = [1] * len(x.shape)
+                new_shape[self.time_dim] = self.ntimes
+                x = x.repeat(new_shape)
+                return x
+            elif self.pad_type == "zero":
+                raise NotImplemented(f"Todo: Need to implement this in the future")
+        else: return x 
 class PatchEmbedGeneric(nn.Module):
     def __init__(self, proj_stem, norm_layer: Optional[Callable] = None):
         super().__init__()
