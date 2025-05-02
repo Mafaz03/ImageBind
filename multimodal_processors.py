@@ -32,12 +32,6 @@ class VerboseNNModule(nn.Module):
         
         return string_repr
 
-class MyLayer(VerboseNNModule):
-    def __init__(self):
-        super().__init__()
-        self.linear = nn.Linear(1, 2)
-        self.register_buffer("running_mean", torch.zeros(5))
-
 def build_causal_attention_mask(context_length):
     mask = torch.empty(context_length, context_length, requires_grad=False)
     mask.fill_(float("-inf"))
