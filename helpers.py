@@ -44,3 +44,17 @@ class Normalize(nn.Module):
         self.dim = dim
     def forward(self, x):
         return nn.functional.normalize(x, p = 2, dim = self.dim)
+
+class SelectEOSandProject(nn.Module):
+    def __init__(self, proj):
+        super().__init__()
+        self.proj = proj
+
+    def forward(self, x, seq_len):
+        assert x.ndim == 3
+        # x: B x L x D
+        a = torch.arrange(x.shape[0]) # a: 0, 1, ... B
+        # len(seq_len) == x.shape[0]
+        x = x[a, seq_len]             # x: B x D
+        x = self.proj(x)
+        return x
