@@ -176,20 +176,48 @@ def get_sinusoid_encoding_table(n_position, d_hid):
     return torch.FloatTensor(sinusoid_table).unsqueeze(0)
 
 
-def interpolate_pos_encoding(npatch_per_image, pos_embed, first_patch_idx: int = 1): 
-    # If CLS present first_patch_idx = 1
+# def interpolate_pos_encoding(npatch_per_image, pos_embed, first_patch_idx: int = 1): 
+#     # If CLS present first_patch_idx = 1
 
-    assert first_patch_idx == 0 or first_patch_idx == 1, "CLS can be either present or not present"
-    # assert 
-    N = pos_embed.shape[1] - first_patch_idx             # If CLS is present tokens from the 1: to rest are actual stuff
+#     assert first_patch_idx == 0 or first_patch_idx == 1, "CLS can be either present or not present"
+#     # assert 
+#     N = pos_embed.shape[1] - first_patch_idx             # If CLS is present tokens from the 1: to rest are actual stuff
     
-    if npatch_per_image == N:
-        return pos_embed
+#     if npatch_per_image == N:
+#         return pos_embed
 
+#     class_emb = pos_embed[:, :first_patch_idx]
+#     pos_embed = pos_embed[:, first_patch_idx:]
+
+#     return torch.cat((class_emb, pos_embed), dim=1)
+
+import torch.nn.functional as F
+
+def interpolate_pos_encoding(npatch_per_image, pos_embed, first_patch_idx: int = 1): 
+    """
+    Interpolates the patch positional embeddings to match the new number of patches.
+    Args:
+        npatch_per_image (int): New number of patches (excluding CLS if present).
+        pos_embed (Tensor): Shape (1, N+1, D) or (1, N, D).
+        first_patch_idx (int): 1 if CLS token is present, else 0.
+    Returns:
+        Interpolated pos_embed of shape (1, npatch_per_image + first_patch_idx, D)
+    """
+    assert first_patch_idx in {0, 1}, "CLS token can be present (1) or absent (0)"
+    D = pos_embed.shape[-1]
     class_emb = pos_embed[:, :first_patch_idx]
-    pos_embed = pos_embed[:, first_patch_idx:]
+    patch_pos_embed = pos_embed[:, first_patch_idx:]
 
-    return torch.cat((class_emb, pos_embed), dim=1)
+    old_npatch = patch_pos_embed.shape[1]
+
+    # Interpolate positional embeddings
+    patch_pos_embed = patch_pos_embed.permute(0, 2, 1)  # (1, D, N)
+    patch_pos_embed = F.interpolate(patch_pos_embed, size=npatch_per_image, mode='linear', align_corners=False)
+    patch_pos_embed = patch_pos_embed.permute(0, 2, 1)  # (1, N_new, D)
+
+    return torch.cat((class_emb, patch_pos_embed), dim=1)
+
+
 
 def _get_pos_embedding(npatch_per_image, pos_embed, first_patch_idx: int = 1):
     return interpolate_pos_encoding(npatch_per_image, pos_embed, first_patch_idx)
@@ -279,6 +307,7 @@ class RGBTProcessor(VerboseNNModule):
         
     def tokenize_input_and_cls_pos(self, input, stem):
         tokens = stem(input)
+        print(self.embed_dim)
         assert tokens.ndim == 3
         assert tokens.shape[-1] == self.embed_dim
 

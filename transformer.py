@@ -182,7 +182,7 @@ class SimpleTransformer(nn.Module):
                 torch.nn.init.constant_(m.bias, 0)
                 torch.nn.init.constant_(m.weight, 1.)
     
-    def forward(self, tokens: torch.Tensor, attn_mask: torch.Tensor, use_checkpoint: bool = False, 
+    def forward(self, tokens: torch.Tensor, attn_mask: torch.Tensor = None, use_checkpoint: bool = False, 
                 checkpoint_every_n: int = 1, checkpoint_block_ids: Optional[List[int]] = None):
         """
         Inputs:

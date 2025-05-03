@@ -53,7 +53,7 @@ class SelectEOSandProject(nn.Module):
     def forward(self, x, seq_len):
         assert x.ndim == 3
         # x: B x L x D
-        a = torch.arrange(x.shape[0]) # a: 0, 1, ... B
+        a = torch.arange(x.shape[0]) # a: 0, 1, ... B
         # len(seq_len) == x.shape[0]
         x = x[a, seq_len]             # x: B x D
         x = self.proj(x)
