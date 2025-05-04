@@ -23,14 +23,16 @@ def load_and_transform_vision_data(image_paths, device="cpu"):
         if image_path.endswith(".jpg") or image_path.endswith(".jpeg") or image_path.endswith(".png"):
             with open(os.path.join(image_paths, image_path), "rb") as im:
                 image = Image.open(im).convert("RGB")
-                image = IMAGE_TRANSFORM(img = image)
+                image = IMAGE_TRANSFORM(img = image).to(device)
                 image_outputs.append(image)
     return torch.stack(image_outputs, dim=0)
 
 def load_and_transform_text(texts, device="cpu"):
     if texts is None: return None
     tokens = [clip.tokenize(text).unsqueeze(0).to(device) for text in texts]
-    return torch.cat(tokens, dim=0)
+    tokens = torch.cat(tokens, dim=0)
+    tokens = tokens.squeeze(dim = 1)
+    return tokens
 
 def uniform_crop(images, size, spacial_idx, boxes=None, scale_size=None):
     assert spacial_idx in [0, 1, 2], "`spacial_idx` must be 0 -> Left | 1 -> Center | 2 -> Right"
