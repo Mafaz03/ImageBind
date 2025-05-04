@@ -123,7 +123,7 @@ class PadIm2Video(Im2Video):
             if self.pad_type == "repeat":
                 new_shape = [1] * len(x.shape)
                 new_shape[self.time_dim] = self.ntimes
-                x = x.repeat(new_shape)
+                x = x.repeat(new_shape)        # (B, C, T, H, W) -> (B, C, ntimes * T, H, W)
                 return x
             elif self.pad_type == "zero":
                 raise NotImplemented(f"Todo: Need to implement this in the future")
@@ -151,6 +151,7 @@ class PatchEmbedGeneric(nn.Module):
         return embed_dim, patch_layout, num_patches
     
     def forward(self, x: torch.Tensor):
+        x = self.proj(x)
         x = x.flatten(2)                                  # B, C, (T), H, W -> B, C, (T)*H*W
         x = x.transpose(1, 2)                             # B, C, (T)*H*W   -> B, (T)*H*W, C
         if self.norm_layer is not None:
@@ -223,7 +224,7 @@ def _get_pos_embedding(npatch_per_image, pos_embed, first_patch_idx: int = 1):
     return interpolate_pos_encoding(npatch_per_image, pos_embed, first_patch_idx)
 
 class SpatioTemporal_posEmbeddingHelper(VerboseNNModule):
-    def __init__(self, num_patches: int, num_cls_tokens: int, embed_dim: int, learnable: bool):
+    def __init__(self, num_patches: int, num_cls_tokens: int, embed_dim: int, learnable: bool = True):
         super().__init__()
         self.num_patches = num_patches
         self.num_cls_tokens = num_cls_tokens
@@ -306,8 +307,9 @@ class RGBTProcessor(VerboseNNModule):
             nn.init.normal_(self.type_embed)
         
     def tokenize_input_and_cls_pos(self, input, stem):
+
         tokens = stem(input)
-        print(self.embed_dim)
+
         assert tokens.ndim == 3
         assert tokens.shape[-1] == self.embed_dim
 
