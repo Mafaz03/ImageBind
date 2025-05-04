@@ -15,7 +15,7 @@ from pytorchvideo.data.clip_sampling import ConstantClipsPerVideoSampler
 from pytorchvideo.data.encoded_video import EncodedVideo
 import av
 
-def load_and_transform_vision_date(image_paths, device="cpu"):
+def load_and_transform_vision_data(image_paths, device="cpu"):
     if image_paths is None: return None
     image_outputs = []
 
