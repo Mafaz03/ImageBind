@@ -23,3 +23,6 @@ VIDEO_TRANSFORM = transforms.Compose(
             ),
         ]
     )
+
+EPOCHS = 10
+DEVICE = "cuda"
