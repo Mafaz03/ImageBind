@@ -63,7 +63,7 @@ class TextPreprocessor(VerboseNNModule):
             mask = build_causal_attention_mask(context_length)
             self.register_buffer("mask", mask) # register the mask as a buffer so it can be moved to the right device
         
-        self.init_parameters(init_param_style)
+        # self.init_parameters(init_param_style)
 
     @torch.no_grad()
     def init_parameters(self, init_param_style = "openclip"):
@@ -281,7 +281,7 @@ class RGBTProcessor(VerboseNNModule):
                 torch.zeros(1, 1, self.embed_dim)
             )
         
-        self.init_parameters(init_param_style)
+        # self.init_parameters(init_param_style)
     
     @torch.no_grad()
     def init_parameters(self, parameter_style):

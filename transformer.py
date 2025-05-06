@@ -63,7 +63,7 @@ class MultiheadAttention(nn.MultiheadAttention):
 class BlockWithMasking(nn.Module):
     def __init__(self, dim, attn_target: Callable, mlp_ratio: int = 4, act_layer: Callable = nn.GELU, 
                  norm_layer: Callable = nn.LayerNorm, ffn_dropout_rate: float = 0.0, drop_path: float = 0.0, 
-                 layer_scale_type: str = None, layer_scale_init_value: float = 1e-4):
+                 layer_scale_type: str = None, layer_scale_init_value: float = 1):
         
         super().__init__()
         assert isinstance(attn_target, nn.Module), f"attn_target should be a Callable. Otherwise attn_target is shared across blocks!"
@@ -169,7 +169,7 @@ class SimpleTransformer(nn.Module):
             ) for i in range(num_blocks)]
         )
 
-        self.apply(self._init_weights)
+        # self.apply(self._init_weights)
     
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
@@ -178,9 +178,9 @@ class SimpleTransformer(nn.Module):
             elif self.weight_init_style == "pytorch":
                 trunc_normal_(m.weight, std=0.02)                 # PyTorch ViT uses trunc_normal_
 
-            if m.bias is not None:
-                torch.nn.init.constant_(m.bias, 0)
-                torch.nn.init.constant_(m.weight, 1.)
+            # if m.bias is not None:
+            #     torch.nn.init.constant_(m.bias, 0)
+            #     torch.nn.init.constant_(m.weight, 1.)
     
     def forward(self, tokens: torch.Tensor, attn_mask: torch.Tensor = None, use_checkpoint: bool = False, 
                 checkpoint_every_n: int = 1, checkpoint_block_ids: Optional[List[int]] = None):

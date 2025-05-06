@@ -14,11 +14,6 @@ ModalityType = SimpleNamespace(
     TEXT="text",
 )
 
-ModalityType = SimpleNamespace(
-    VISION="vision",
-    TEXT="text",
-)
-
 
 class ImageBindModel(nn.Module):
     def __init__(
